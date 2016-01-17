@@ -18,11 +18,11 @@
 <resources>
 
     <style name="Theme.Bacon" parent="@style/Theme.AppCompat.Light.NoActionBar">
-
-    </style>
-
-    <style name="Theme.Bacon.Detail">
-        <item name="android:statusBarColor">@android:color/transparent</item>
+        <item name="colorPrimary">@color/green_500</item>
+        <item name="colorPrimaryDark">@color/green_700</item>
+        <item name="android:colorPrimaryDark">@color/green_700</item>
+        <item name="colorAccent">@color/deep_orange_a400</item>
+        <item name="android:navigationBarColor">@color/green_700</item>
     </style>
 
 </resources>
