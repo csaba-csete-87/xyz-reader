@@ -17,5 +17,6 @@
     <dimen name="thumbnail_height">200dp</dimen>
     <dimen name="grid_1">8dp</dimen>
     <dimen name="text_margin">16dp</dimen>
+    <dimen name="init_scroll_up_distance">-160dp</dimen>
 
 </resources>

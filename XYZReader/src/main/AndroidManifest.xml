@@ -38,16 +38,6 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.FullscreenActivity"
-            android:configChanges="orientation|keyboardHidden|screenSize"
-            android:label="@string/title_activity_fullscreen"
-            android:parentActivityName=".ui.ArticleListActivity"
-            android:theme="@style/FullscreenTheme">
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value="com.example.xyzreader.ui.ArticleListActivity" />
-        </activity>
-        <activity
             android:name=".ui.TestDetailActivity"
             android:label="@string/title_activity_test_detail">
             <intent-filter>

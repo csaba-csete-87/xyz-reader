@@ -1,6 +1,7 @@
 package com.example.xyzreader.ui;
 
-import android.app.Activity;
+import android.animation.Animator;
+import android.animation.ObjectAnimator;
 import android.app.LoaderManager;
 import android.content.Loader;
 import android.database.Cursor;
@@ -10,13 +11,11 @@ import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
+import android.text.format.DateUtils;
 import android.view.View;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
@@ -25,10 +24,16 @@ import com.nostra13.universalimageloader.core.ImageLoader;
 import com.nostra13.universalimageloader.core.assist.FailReason;
 import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 public class TestDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
     private Cursor mCursor;
     private long mStartId;
+
+    @Bind(R.id.article_container)
+    LinearLayout articleContainer;
 
     private long mSelectedItemId;
     private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
@@ -37,6 +42,7 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_test_detail);
+        ButterKnife.bind(this);
         ActivityCompat.postponeEnterTransition(this);
 
         getLoaderManager().initLoader(0, null, this);
@@ -46,7 +52,6 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
                 mSelectedItemId = mStartId;
             }
         }
-        setResult(Activity.RESULT_OK);
     }
 
     @Override
@@ -77,17 +82,15 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
     }
 
     @Override
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Toast.makeText(this, "Do Share", Toast.LENGTH_SHORT).show();
-        return true;
+    public void onEnterAnimationComplete() {
+        super.onEnterAnimationComplete();
+        final int startScrollPos = getResources().getDimensionPixelSize(R.dimen.init_scroll_up_distance);
+        Animator animator = ObjectAnimator.ofInt(
+                articleContainer,
+                "scrollY",
+                startScrollPos,
+                0).setDuration(500);
+        animator.start();
     }
 
     private void setCursor(Cursor cursor) {
@@ -139,8 +142,17 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
     }
 
     private void setBody() {
-        TextView t = (TextView) findViewById(R.id.article_body);
-        t.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
+        TextView t = (TextView) findViewById(R.id.article_byline);
+        t.setText(Html.fromHtml(
+                DateUtils.getRelativeTimeSpanString(
+                        mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE),
+                        System.currentTimeMillis(), DateUtils.HOUR_IN_MILLIS,
+                        DateUtils.FORMAT_ABBREV_ALL).toString()
+                        + " by "
+                        + mCursor.getString(ArticleLoader.Query.AUTHOR)
+        ));
+        TextView body = (TextView) findViewById(R.id.article_body);
+        body.setText(Html.fromHtml(mCursor.getString(ArticleLoader.Query.BODY)));
     }
 
     @Override
