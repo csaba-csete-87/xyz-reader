@@ -27,6 +27,7 @@ public class ImageUtils {
     public static DisplayImageOptions getDefaultDisplayImageOptions() {
         return new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
+                .cacheInMemory(true)
                 .considerExifParams(true)
                 .bitmapConfig(Bitmap.Config.RGB_565)
                 .build();
@@ -35,6 +36,7 @@ public class ImageUtils {
     public static DisplayImageOptions getRoundedDisplayOptions(Context c) {
         return new DisplayImageOptions.Builder()
                 .cacheOnDisk(true)
+                .cacheInMemory(true)
                 .considerExifParams(true)
                 .displayer(new RoundedBitmapDisplayer(c.getResources().getDimensionPixelSize(R.dimen.rounded_corner_radius)))
                 .bitmapConfig(Bitmap.Config.RGB_565)

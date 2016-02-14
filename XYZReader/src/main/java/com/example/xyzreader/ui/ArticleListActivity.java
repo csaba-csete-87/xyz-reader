@@ -7,17 +7,23 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.Loader;
 import android.database.Cursor;
+import android.graphics.Bitmap;
+import android.graphics.Color;
 import android.graphics.Rect;
+import android.os.Build;
 import android.os.Bundle;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
+import android.support.v7.graphics.Palette;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
-import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
+import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
@@ -25,6 +31,8 @@ import com.example.xyzreader.data.ArticleLoader;
 import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
 import com.nostra13.universalimageloader.core.ImageLoader;
+import com.nostra13.universalimageloader.core.assist.FailReason;
+import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -91,6 +99,7 @@ public class ArticleListActivity extends AppCompatActivity implements
         if (savedInstanceState == null) {
             refresh();
         }
+        ActivityCompat.postponeEnterTransition(this);
     }
 
     @Override
@@ -156,24 +165,35 @@ public class ArticleListActivity extends AppCompatActivity implements
         public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
             View view = getLayoutInflater().inflate(R.layout.list_item_article, parent, false);
             final ViewHolder vh = new ViewHolder(view);
+
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    startActivity(new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition()))));
+                    Intent intent = new Intent(Intent.ACTION_VIEW,
+                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
+
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+                        ActivityCompat.postponeEnterTransition(ArticleListActivity.this);
+
+                        ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(
+                                ArticleListActivity.this,
+                                vh.thumbnailView,
+                                getString(R.string.transition_photo)
+                        );
+                        Bundle b = options.toBundle();
+                        startActivity(intent, b);
+                    } else {
+                        startActivity(intent);
+                    }
                 }
             });
             return vh;
         }
 
         @Override
-        public void onBindViewHolder(ViewHolder holder, int position) {
+        public void onBindViewHolder(final ViewHolder holder, int position) {
             mCursor.moveToPosition(position);
             String thumbnailUrl = mCursor.getString(ArticleLoader.Query.THUMB_URL);
-            String photoUrl = mCursor.getString(ArticleLoader.Query.PHOTO_URL);
-
-            Log.d("thumbnailUrl", "" + thumbnailUrl);
-            Log.d("photoUrl", "" + photoUrl);
 
             holder.titleView.setText(mCursor.getString(ArticleLoader.Query.TITLE));
             holder.subtitleView.setText(
@@ -184,7 +204,28 @@ public class ArticleListActivity extends AppCompatActivity implements
                             + " by "
                             + mCursor.getString(ArticleLoader.Query.AUTHOR));
 
-            ImageLoader.getInstance().displayImage(thumbnailUrl, holder.thumbnailView);
+            ImageLoader.getInstance().displayImage(thumbnailUrl, holder.thumbnailView, new ImageLoadingListener() {
+                @Override
+                public void onLoadingStarted(String imageUri, View view) {
+
+                }
+
+                @Override
+                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
+
+                }
+
+                @Override
+                public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+                    Palette p = Palette.from(loadedImage).generate();
+                    holder.container.setBackgroundColor(p.getDarkVibrantColor(p.getDarkMutedColor(Color.BLACK)));
+                }
+
+                @Override
+                public void onLoadingCancelled(String imageUri, View view) {
+
+                }
+            });
         }
 
         @Override
@@ -194,6 +235,9 @@ public class ArticleListActivity extends AppCompatActivity implements
     }
 
     public class ViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.container)
+        LinearLayout container;
 
         @Bind(R.id.thumbnail)
         ImageView thumbnailView;

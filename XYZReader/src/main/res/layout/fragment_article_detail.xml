@@ -30,7 +30,15 @@
 
     </android.support.design.widget.AppBarLayout>
 
+    <ImageView
+        android:id="@+id/photo"
+        android:layout_width="match_parent"
+        android:layout_height="@dimen/detail_photo_height"
+        android:scaleType="centerCrop"
+        android:transitionName="@string/transition_photo" />
+
     <ScrollView
+        android:layout_marginTop="@dimen/detail_photo_height"
         android:layout_width="match_parent"
         android:layout_height="match_parent">
 
@@ -38,13 +46,6 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical">
-
-            <ImageView
-                android:id="@+id/photo"
-                android:layout_width="match_parent"
-                android:layout_height="@dimen/detail_photo_height"
-                android:scaleType="centerCrop"
-                android:transitionName="@string/transition_photo" />
 
             <LinearLayout
                 android:id="@+id/meta_bar"
@@ -88,21 +89,10 @@
                 android:layout_marginRight="@dimen/detail_inner_horiz_margin"
                 android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
                 android:textColorLink="?colorAccent"
+                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
                 android:textSize="@dimen/detail_body_text_size" />
 
         </LinearLayout>
     </ScrollView>
-
-    <android.support.design.widget.FloatingActionButton
-        android:id="@+id/refresh_button"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_margin="@dimen/grid_2"
-        android:src="@mipmap/ic_share"
-        app:borderWidth="0dp"
-        app:elevation="@dimen/fab_elevation"
-        app:layout_anchor="@id/photo"
-        app:layout_anchorGravity="bottom|right|end"
-        app:pressedTranslationZ="@dimen/fab_press_translation_z" />
 
 </android.support.design.widget.CoordinatorLayout>

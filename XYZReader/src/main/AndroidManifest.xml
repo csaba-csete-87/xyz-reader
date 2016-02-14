@@ -26,19 +26,7 @@
         <activity
             android:name=".ui.ArticleDetailActivity"
             android:parentActivityName=".ui.ArticleListActivity"
-            android:theme="@style/Theme.Bacon.Detail">
-            <intent-filter>
-                <action android:name="android.intent.action.VIEW" />
-
-                <category android:name="android.intent.category.DEFAULT" />
-
-                <data android:mimeType="vnd.android.cursor.item/vnd.com.example.xyzreader.items" />
-            </intent-filter>
-
-            <meta-data
-                android:name="android.support.PARENT_ACTIVITY"
-                android:value=".ui.ArticleListActivity" />
-        </activity>
+            android:theme="@style/Theme.Bacon.Detail" />
 
         <service
             android:name=".data.UpdaterService"
@@ -58,6 +46,21 @@
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
                 android:value="com.example.xyzreader.ui.ArticleListActivity" />
+        </activity>
+        <activity
+            android:name=".ui.TestDetailActivity"
+            android:label="@string/title_activity_test_detail">
+            <intent-filter>
+                <action android:name="android.intent.action.VIEW" />
+
+                <category android:name="android.intent.category.DEFAULT" />
+
+                <data android:mimeType="vnd.android.cursor.item/vnd.com.example.xyzreader.items" />
+            </intent-filter>
+
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value=".ui.ArticleListActivity" />
         </activity>
     </application>
 

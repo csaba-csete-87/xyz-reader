@@ -16,5 +16,6 @@
     <dimen name="rounded_corner_radius">8dp</dimen>
     <dimen name="thumbnail_height">200dp</dimen>
     <dimen name="grid_1">8dp</dimen>
+    <dimen name="text_margin">16dp</dimen>
 
 </resources>
