@@ -20,7 +20,6 @@
     <style name="Theme.Bacon.Main" parent="@style/Theme.AppCompat.Light.NoActionBar">
         <item name="colorPrimary">@color/green_500</item>
         <item name="colorPrimaryDark">@color/green_700</item>
-        <item name="android:colorPrimaryDark">@color/green_700</item>
         <item name="colorAccent">@color/deep_orange_a400</item>
 
         <item name="android:windowContentTransitions">true</item>
@@ -29,20 +28,11 @@
     <style name="Theme.Bacon.Detail" parent="@style/Theme.Bacon.Main">
         <item name="android:navigationBarColor">@android:color/transparent</item>
         <item name="android:statusBarColor">@android:color/transparent</item>
-
-        <item name="android:windowTranslucentStatus">true</item>
     </style>
 
-    <style name="FullscreenTheme" parent="Theme.Bacon.Main">
-        <item name="android:actionBarStyle">@style/FullscreenActionBarStyle</item>
-        <item name="android:windowActionBarOverlay">true</item>
-        <item name="android:windowBackground">@null</item>
-        <item name="metaButtonBarStyle">?android:attr/buttonBarStyle</item>
-        <item name="metaButtonBarButtonStyle">?android:attr/buttonBarButtonStyle</item>
-    </style>
-
-    <style name="FullscreenActionBarStyle" parent="android:Widget.Holo.ActionBar">
-        <item name="android:background">@color/black_overlay</item>
+    <style name="CollapsingToolbarLayoutExpandedTextStyle">
+        <item name="android:textColor">@android:color/transparent</item>
+        <item name="android:textSize">0sp</item>
     </style>
 
 </resources>

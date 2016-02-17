@@ -25,8 +25,7 @@
         </activity>
         <activity
             android:name=".ui.ArticleDetailActivity"
-            android:parentActivityName=".ui.ArticleListActivity"
-            android:theme="@style/Theme.Bacon.Detail" />
+            android:parentActivityName=".ui.ArticleListActivity" />
 
         <service
             android:name=".data.UpdaterService"
@@ -39,7 +38,8 @@
 
         <activity
             android:name=".ui.TestDetailActivity"
-            android:label="@string/title_activity_test_detail">
+            android:label="@string/title_activity_test_detail"
+            android:theme="@style/Theme.Bacon.Detail">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
 
