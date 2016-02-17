@@ -5,11 +5,13 @@ import android.animation.ObjectAnimator;
 import android.app.LoaderManager;
 import android.content.Intent;
 import android.content.Loader;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -52,6 +54,7 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
     ActivityCompat.postponeEnterTransition(this);
 
     setupToolbar();
+    setupFab();
 
     getLoaderManager().initLoader(0, null, this);
     if (savedInstanceState == null) {
@@ -62,9 +65,24 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
     }
   }
 
+  private void setupFab() {
+    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_button);
+    if (fab != null) {
+      fab.setOnClickListener(new View.OnClickListener() {
+        @Override
+        public void onClick(View v) {
+          shareArticle();
+        }
+      });
+    }
+  }
+
   private void setupToolbar() {
     setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
     getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+      getSupportActionBar().setDisplayShowTitleEnabled(false);
+    }
   }
 
   @Override
@@ -82,10 +100,14 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
   @Override
   public boolean onOptionsItemSelected(MenuItem item) {
     if (item.getItemId() == R.id.action_share) {
-      Intent shareIntent = getShareIntent();
-      startActivity(shareIntent);
+      shareArticle();
     }
     return super.onOptionsItemSelected(item);
+  }
+
+  private void shareArticle() {
+    Intent shareIntent = getShareIntent();
+    startActivity(shareIntent);
   }
 
   @NonNull
@@ -140,7 +162,10 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
   }
 
   private void setToolbarTitle() {
-    ((CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout)).setTitle(getArticleTitle());
+    CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
+    if (collapsingToolbarLayout != null) {
+      collapsingToolbarLayout.setTitle(getArticleTitle());
+    }
   }
 
   private void setCursor(Cursor cursor) {
@@ -179,15 +204,7 @@ public class TestDetailActivity extends AppCompatActivity implements LoaderManag
 
   @NonNull
   private String getArticleSubtitle() {
-    return getReadableDate()
-        + getColoredText(getArticleAuthor());
-  }
-
-  @NonNull
-  private String getColoredText(String text) {
-    return " by <font color='#ffffff'>"
-        + text
-        + "</font>";
+    return getReadableDate() + getArticleAuthor();
   }
 
   @NonNull
