@@ -16,23 +16,24 @@ import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.ActivityOptionsCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.graphics.Palette;
+import android.support.v7.widget.CardView;
 import android.support.v7.widget.GridLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.text.format.DateUtils;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.animation.Animation;
+import android.view.animation.AnimationUtils;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 
 import com.example.xyzreader.R;
 import com.example.xyzreader.data.ArticleLoader;
-import com.example.xyzreader.data.ItemsContract;
 import com.example.xyzreader.data.UpdaterService;
 import com.nostra13.universalimageloader.core.ImageLoader;
-import com.nostra13.universalimageloader.core.assist.FailReason;
-import com.nostra13.universalimageloader.core.listener.ImageLoadingListener;
+import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListener;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
@@ -61,6 +62,7 @@ public class ArticleListActivity extends AppCompatActivity implements
             }
         }
     };
+    private int lastPosition;
 
     @OnClick(R.id.refresh_button)
     void onRefreshButtonClicked() {
@@ -93,11 +95,6 @@ public class ArticleListActivity extends AppCompatActivity implements
         });
 
         getLoaderManager().initLoader(0, null, this);
-
-        if (savedInstanceState == null) {
-            refresh();
-        }
-        ActivityCompat.postponeEnterTransition(this);
     }
 
     @Override
@@ -167,9 +164,10 @@ public class ArticleListActivity extends AppCompatActivity implements
             view.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View view) {
-                    Intent intent = new Intent(Intent.ACTION_VIEW,
-                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
-
+//                    Intent intent = new Intent(Intent.ACTION_VIEW,
+//                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
+                    Intent intent = new Intent(ArticleListActivity.this, TestDetailActivity.class);
+                    intent.putExtra("articleId", getItemId(vh.getAdapterPosition()));
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         ActivityCompat.postponeEnterTransition(ArticleListActivity.this);
 
@@ -202,28 +200,15 @@ public class ArticleListActivity extends AppCompatActivity implements
                             + " by "
                             + mCursor.getString(ArticleLoader.Query.AUTHOR));
 
-            ImageLoader.getInstance().displayImage(thumbnailUrl, holder.thumbnailView, new ImageLoadingListener() {
-                @Override
-                public void onLoadingStarted(String imageUri, View view) {
-
-                }
-
-                @Override
-                public void onLoadingFailed(String imageUri, View view, FailReason failReason) {
-
-                }
-
+            ImageLoader.getInstance().displayImage(thumbnailUrl, holder.thumbnailView, new SimpleImageLoadingListener() {
                 @Override
                 public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
                     Palette p = Palette.from(loadedImage).generate();
                     holder.container.setBackgroundColor(p.getDarkVibrantColor(p.getDarkMutedColor(Color.BLACK)));
                 }
-
-                @Override
-                public void onLoadingCancelled(String imageUri, View view) {
-
-                }
             });
+
+            setAnimation(holder.cardView, position);
         }
 
         @Override
@@ -232,7 +217,21 @@ public class ArticleListActivity extends AppCompatActivity implements
         }
     }
 
+    private void setAnimation(View viewToAnimate, int position) {
+        if (position == 0) {
+            Animation animation = AnimationUtils.loadAnimation(ArticleListActivity.this, android.R.anim.fade_in);
+            viewToAnimate.startAnimation(animation);
+        } else if (position > lastPosition) {
+            Animation animation = AnimationUtils.loadAnimation(ArticleListActivity.this, R.anim.slide_up);
+            viewToAnimate.startAnimation(animation);
+        }
+        lastPosition = position;
+    }
+
     public class ViewHolder extends RecyclerView.ViewHolder {
+
+        @Bind(R.id.card_view)
+        CardView cardView;
 
         @Bind(R.id.container)
         LinearLayout container;

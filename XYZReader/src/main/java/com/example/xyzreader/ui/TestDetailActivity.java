@@ -11,12 +11,16 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.CollapsingToolbarLayout;
+import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.text.Html;
 import android.text.format.DateUtils;
+import android.util.Log;
+import android.util.TypedValue;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -32,226 +36,271 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 public class TestDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
-  private Cursor mCursor;
-  private long mStartId;
+    private Cursor mCursor;
+    private long mStartId;
 
-  private long mSelectedItemId;
-  private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
+    private long mSelectedItemId;
+    private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
 
-  private SimpleImageLoadingListener articleHeaderImageLoadingListener = new SimpleImageLoadingListener() {
+    private ImageView imageView;
+
+    private SimpleImageLoadingListener articleHeaderImageLoadingListener = new SimpleImageLoadingListener() {
+
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            ActivityCompat.startPostponedEnterTransition(TestDetailActivity.this);
+        }
+
+    };
+    private long mArticleId;
 
     @Override
-    public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-      ActivityCompat.startPostponedEnterTransition(TestDetailActivity.this);
-    }
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.activity_test_detail);
+        ActivityCompat.postponeEnterTransition(this);
 
-  };
+        setupToolbar();
+        setupFab();
 
-  @Override
-  protected void onCreate(Bundle savedInstanceState) {
-    super.onCreate(savedInstanceState);
-    setContentView(R.layout.activity_test_detail);
-    ActivityCompat.postponeEnterTransition(this);
+        imageView = (ImageView) findViewById(R.id.photo);
+        mArticleId = getIntent().getLongExtra("articleId", 0);
 
-    setupToolbar();
-    setupFab();
+        setupFullBleedIfNecessary();
 
-    getLoaderManager().initLoader(0, null, this);
-    if (savedInstanceState == null) {
-      if (getIntent() != null && getIntent().getData() != null) {
-        mStartId = ItemsContract.Items.getItemId(getIntent().getData());
-        mSelectedItemId = mStartId;
-      }
-    }
-  }
-
-  private void setupFab() {
-    FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_button);
-    if (fab != null) {
-      fab.setOnClickListener(new View.OnClickListener() {
-        @Override
-        public void onClick(View v) {
-          shareArticle();
+        getLoaderManager().initLoader(0, null, this);
+        if (savedInstanceState == null) {
+            if (getIntent() != null && getIntent().getData() != null) {
+                mStartId = ItemsContract.Items.getItemId(getIntent().getData());
+                mSelectedItemId = mStartId;
+            }
         }
-      });
     }
-  }
 
-  private void setupToolbar() {
-    setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
-    getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-    if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
-      getSupportActionBar().setDisplayShowTitleEnabled(false);
-    }
-  }
+    private void setupFullBleedIfNecessary() {
+        if (getResources().getBoolean(R.bool.shouldShowFullBleedImage)) {
+            NestedScrollView nestedScrollView = (NestedScrollView) findViewById(R.id.article_scroll_container);
+            nestedScrollView.setOnScrollChangeListener(new NestedScrollView.OnScrollChangeListener() {
+                @Override
+                public void onScrollChange(NestedScrollView v, int scrollX, int scrollY, int oldScrollX, int oldScrollY) {
+                    CoordinatorLayout.LayoutParams layoutParams = (CoordinatorLayout.LayoutParams) imageView.getLayoutParams();
 
-  @Override
-  public void onBackPressed() {
-    finish();
-  }
+                    setNewImageHeight(scrollY, oldScrollY, layoutParams);
 
-  @Override
-  public boolean onCreateOptionsMenu(Menu menu) {
-    MenuInflater inflater = getMenuInflater();
-    inflater.inflate(R.menu.detail, menu);
-    return true;
-  }
-
-  @Override
-  public boolean onOptionsItemSelected(MenuItem item) {
-    if (item.getItemId() == R.id.action_share) {
-      shareArticle();
-    }
-    return super.onOptionsItemSelected(item);
-  }
-
-  private void shareArticle() {
-    Intent shareIntent = getShareIntent();
-    startActivity(shareIntent);
-  }
-
-  @NonNull
-  private Intent getShareIntent() {
-    Intent sendIntent = new Intent();
-    sendIntent.setAction(Intent.ACTION_SEND);
-    sendIntent.putExtra(Intent.EXTRA_TEXT, getFullArticle());
-    sendIntent.setType("text/plain");
-    return sendIntent;
-  }
-
-  @Override
-  public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
-    return ArticleLoader.newAllArticlesInstance(this);
-  }
-
-  @Override
-  public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
-    setCursor(cursor);
-
-    setToolbarTitle();
-    initArticle();
-  }
-
-  private void initArticle() {
-    setHeaderImage();
-    setArticleTitle();
-    setArticleSubtitle();
-    setArticleBody();
-  }
-
-  @Override
-  public void onEnterAnimationComplete() {
-    super.onEnterAnimationComplete();
-    Animator animator = getUpwardScrollAnimator();
-    animator.start();
-  }
-
-  @NonNull
-  private ObjectAnimator getUpwardScrollAnimator() {
-    return ObjectAnimator.ofInt(
-        findViewById(R.id.article_container),
-        "scrollY",
-        getResources().getDimensionPixelSize(R.dimen.init_scroll_up_distance),
-        0
-    ).setDuration(500);
-  }
-
-  @Override
-  public void onLoaderReset(Loader<Cursor> cursorLoader) {
-    mCursor = null;
-  }
-
-  private void setToolbarTitle() {
-    CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
-    if (collapsingToolbarLayout != null) {
-      collapsingToolbarLayout.setTitle(getArticleTitle());
-    }
-  }
-
-  private void setCursor(Cursor cursor) {
-    mCursor = cursor;
-
-    // Select the start ID
-    if (mStartId > 0) {
-      mCursor.moveToFirst();
-      // TODO: optimize
-      while (!mCursor.isAfterLast()) {
-        if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-          final int position = mCursor.getPosition();
-          mCursor.moveToPosition(position);
-          break;
+                    imageView.setLayoutParams(layoutParams);
+                }
+            });
         }
-        mCursor.moveToNext();
-      }
-      mStartId = 0;
     }
-  }
 
-  private void setHeaderImage() {
-    ImageView iv = (ImageView) findViewById(R.id.photo);
-    ImageLoader.getInstance().displayImage(getArticlePhotoUrl(), iv, articleHeaderImageLoadingListener);
-  }
+    private void setNewImageHeight(int scrollY, int oldScrollY, CoordinatorLayout.LayoutParams layoutParams) {
+        float dy = (float) (oldScrollY - scrollY) / 2;
+        int height = layoutParams.height;
+        height += dy;
+        if (height <= getActionBarHeight())
+            layoutParams.height = getActionBarHeight();
+        else
+            layoutParams.height = height;
+    }
 
-  private void setArticleBody() {
-    TextView body = (TextView) findViewById(R.id.article_body);
-    body.setText(Html.fromHtml(getArticlePart(ArticleLoader.Query.BODY)));
-  }
+    private int getActionBarHeight() {
+        TypedValue tv = new TypedValue();
+        if (getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true)) {
+            return TypedValue.complexToDimensionPixelSize(tv.data, getResources().getDisplayMetrics());
+        }
+        return 0;
+    }
 
-  private void setArticleSubtitle() {
-    TextView t = (TextView) findViewById(R.id.article_subtitle);
-    t.setText(Html.fromHtml(getArticleSubtitle()));
-  }
+    private void setupFab() {
+        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_button);
+        if (fab != null) {
+            fab.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    shareArticle();
+                }
+            });
+        }
+    }
 
-  @NonNull
-  private String getArticleSubtitle() {
-    return getReadableDate() + getArticleAuthor();
-  }
+    private void setupToolbar() {
+        setSupportActionBar((Toolbar) findViewById(R.id.toolbar));
+        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
+            getSupportActionBar().setDisplayShowTitleEnabled(false);
+        }
+    }
 
-  @NonNull
-  private String getReadableDate() {
-    return DateUtils.getRelativeTimeSpanString(
-        getArticleDate(),
-        System.currentTimeMillis(),
-        DateUtils.HOUR_IN_MILLIS,
-        DateUtils.FORMAT_ABBREV_ALL
-    ).toString();
-  }
+    @Override
+    public void onBackPressed() {
+        finish();
+    }
 
-  private long getArticleDate() {
-    return mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE);
-  }
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.detail, menu);
+        return true;
+    }
 
-  private void setArticleTitle() {
-    TextView t = (TextView) findViewById(R.id.article_title);
-    t.setText(getArticleTitle());
-  }
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        if (item.getItemId() == R.id.action_share) {
+            shareArticle();
+        }
+        return super.onOptionsItemSelected(item);
+    }
 
-  private String getArticleTitle() {
-    return getArticlePart(ArticleLoader.Query.TITLE);
-  }
+    private void shareArticle() {
+        Intent shareIntent = getShareIntent();
+        startActivity(shareIntent);
+    }
 
-  private String getArticleAuthor() {
-    return getArticlePart(ArticleLoader.Query.AUTHOR);
-  }
+    @NonNull
+    private Intent getShareIntent() {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, getFullArticle());
+        sendIntent.setType("text/plain");
+        return sendIntent;
+    }
 
-  private String getArticleBody() {
-    return getArticlePart(ArticleLoader.Query.BODY);
-  }
+    @Override
+    public Loader<Cursor> onCreateLoader(int i, Bundle bundle) {
+        return ArticleLoader.newInstanceForItemId(this, mArticleId);
+    }
 
-  private String getArticlePhotoUrl() {
-    return getArticlePart(ArticleLoader.Query.PHOTO_URL);
-  }
+    @Override
+    public void onLoadFinished(Loader<Cursor> cursorLoader, Cursor cursor) {
+        setCursor(cursor);
 
-  private String getArticlePart(int part) {
-    return mCursor.getString(part);
-  }
+        setToolbarTitle();
+        initArticle();
+    }
 
-  private String getFullArticle() {
-    return getArticleTitle() + getNewLine() + getNewLine() + getArticleBody();
-  }
+    @Override
+    public void onLoaderReset(Loader<Cursor> cursorLoader) {
+        mCursor = null;
+    }
 
-  private String getNewLine() {
-    return "//n";
-  }
+    private void initArticle() {
+        setHeaderImage();
+        setArticleTitle();
+        setArticleSubtitle();
+        setArticleBody();
+    }
+
+    @Override
+    public void onEnterAnimationComplete() {
+        super.onEnterAnimationComplete();
+        Animator animator = getUpwardScrollAnimator();
+        animator.start();
+    }
+
+    @NonNull
+    private ObjectAnimator getUpwardScrollAnimator() {
+        return ObjectAnimator.ofInt(
+                findViewById(R.id.article_container),
+                "scrollY",
+                getResources().getDimensionPixelSize(R.dimen.init_scroll_up_distance),
+                0
+        ).setDuration(500);
+    }
+
+    private void setToolbarTitle() {
+        CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
+        if (collapsingToolbarLayout != null) {
+            collapsingToolbarLayout.setTitle(getArticleTitle());
+        }
+    }
+
+    private void setCursor(Cursor cursor) {
+        mCursor = cursor;
+        if (mCursor != null && !mCursor.moveToFirst()) {
+            Log.e("TAG", "Error reading item detail cursor");
+            mCursor.close();
+            mCursor = null;
+        }
+
+//        // Select the start ID
+//        if (mStartId > 0) {
+//            mCursor.moveToFirst();
+//            // TODO: optimize
+//            while (!mCursor.isAfterLast()) {
+//                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
+//                    final int position = mCursor.getPosition();
+//                    mCursor.moveToPosition(position);
+//                    break;
+//                }
+//                mCursor.moveToNext();
+//            }
+//            mStartId = 0;
+//        }
+    }
+
+    private void setHeaderImage() {
+        ImageView iv = (ImageView) findViewById(R.id.photo);
+        ImageLoader.getInstance().displayImage(getArticlePhotoUrl(), iv, articleHeaderImageLoadingListener);
+    }
+
+    private void setArticleBody() {
+        TextView body = (TextView) findViewById(R.id.article_body);
+        body.setText(Html.fromHtml(getArticlePart(ArticleLoader.Query.BODY)));
+    }
+
+    private void setArticleSubtitle() {
+        TextView t = (TextView) findViewById(R.id.article_subtitle);
+        t.setText(Html.fromHtml(getArticleSubtitle()));
+    }
+
+    private String getArticleSubtitle() {
+        return String.format("%s %s", getReadableDate(), getArticleAuthor());
+    }
+
+    private String getReadableDate() {
+        return DateUtils.getRelativeTimeSpanString(
+                getArticleDate(),
+                System.currentTimeMillis(),
+                DateUtils.HOUR_IN_MILLIS,
+                DateUtils.FORMAT_ABBREV_ALL
+        ).toString();
+    }
+
+    private long getArticleDate() {
+        return mCursor.getLong(ArticleLoader.Query.PUBLISHED_DATE);
+    }
+
+    private void setArticleTitle() {
+        TextView t = (TextView) findViewById(R.id.article_title);
+        t.setText(getArticleTitle());
+    }
+
+    private String getArticleTitle() {
+        return getArticlePart(ArticleLoader.Query.TITLE);
+    }
+
+    private String getArticleAuthor() {
+        return getArticlePart(ArticleLoader.Query.AUTHOR);
+    }
+
+    private String getArticleBody() {
+        return getArticlePart(ArticleLoader.Query.BODY);
+    }
+
+    private String getArticlePhotoUrl() {
+        return getArticlePart(ArticleLoader.Query.PHOTO_URL);
+    }
+
+    private String getArticlePart(int part) {
+        return mCursor.getString(part);
+    }
+
+    private String getFullArticle() {
+        return getArticleTitle() + getNewLine() + getNewLine() + getArticleBody();
+    }
+
+    private String getNewLine() {
+        return "//n";
+    }
 
 }

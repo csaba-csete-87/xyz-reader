@@ -9,52 +9,67 @@
         android:id="@+id/photo"
         android:layout_width="match_parent"
         android:layout_height="@dimen/detail_photo_height"
-        android:layout_weight="2"
         android:fitsSystemWindows="true"
         android:scaleType="centerCrop"
         android:transitionName="@string/transition_photo" />
 
     <android.support.v4.widget.NestedScrollView
+        android:id="@+id/article_scroll_container"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_weight="1"
         android:background="@android:color/transparent"
         android:fitsSystemWindows="true"
+        android:overScrollMode="never"
         app:layout_behavior="@string/appbar_scrolling_view_behavior">
 
         <LinearLayout
-            android:id="@+id/article_container"
-            android:layout_width="@dimen/article_max_width"
+            android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:elevation="@dimen/cardview_default_elevation"
             android:orientation="vertical">
 
-            <TextView
-                android:id="@+id/article_title"
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:layout_marginTop="240dp"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Title"
-                android:textColorLink="?colorAccent" />
+                android:layout_height="@dimen/article_top_spacing" />
 
-            <TextView
-                android:id="@+id/article_subtitle"
+            <LinearLayout
+                android:id="@+id/article_container"
+                android:layout_width="@dimen/article_max_width"
+                android:layout_height="wrap_content"
+                android:layout_margin="@dimen/md_keylines"
+                android:background="@android:color/white"
+                android:elevation="@dimen/cardview_default_elevation"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/article_title"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/md_keylines"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Title"
+                    android:textColorLink="?colorAccent" />
+
+                <TextView
+                    android:id="@+id/article_subtitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/md_keylines"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2" />
+
+                <TextView
+                    android:id="@+id/article_body"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_margin="@dimen/md_keylines"
+                    android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
+                    android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
+                    android:textColorLink="?colorAccent" />
+
+            </LinearLayout>
+
+            <View
                 android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body2" />
-
-            <TextView
-                android:id="@+id/article_body"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="16dp"
-                android:lineSpacingMultiplier="@fraction/detail_body_line_spacing_multiplier"
-                android:textAppearance="@style/Base.TextAppearance.AppCompat.Body1"
-                android:textColorLink="?colorAccent" />
-
+                android:layout_height="@dimen/article_bottom_spacing" />
         </LinearLayout>
 
     </android.support.v4.widget.NestedScrollView>
@@ -62,7 +77,8 @@
     <android.support.v7.widget.Toolbar
         android:id="@+id/toolbar"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize" />
+        android:layout_height="?actionBarSize"
+        app:navigationIcon="@drawable/ic_action_back" />
 
     <android.support.design.widget.FloatingActionButton
         android:id="@+id/share_button"
@@ -72,7 +88,7 @@
         android:src="@drawable/ic_action_share"
         app:borderWidth="0dp"
         app:elevation="@dimen/fab_elevation"
-        app:layout_anchor="@id/article_container"
+        app:layout_anchor="@id/detail_content"
         app:layout_anchorGravity="bottom|right|end"
         app:pressedTranslationZ="@dimen/fab_press_translation_z" />
 

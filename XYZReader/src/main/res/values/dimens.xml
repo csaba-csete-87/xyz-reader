@@ -20,6 +20,8 @@
     <dimen name="init_scroll_up_distance">-320dp</dimen>
     <dimen name="article_keylines">72dp</dimen>
     <dimen name="md_keylines">16dp</dimen>
-    <dimen name="article_max_width">640dp</dimen>
+    <dimen name="article_max_width">700dp</dimen>
+    <dimen name="article_bottom_spacing">120dp</dimen>
+    <dimen name="article_top_spacing">360dp</dimen>
 
 </resources>
