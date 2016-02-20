@@ -10,10 +10,12 @@ import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.support.annotation.NonNull;
+import android.support.design.widget.AppBarLayout;
 import android.support.design.widget.CollapsingToolbarLayout;
 import android.support.design.widget.CoordinatorLayout;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.view.ViewCompat;
 import android.support.v4.widget.NestedScrollView;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -21,9 +23,6 @@ import android.text.Html;
 import android.text.format.DateUtils;
 import android.util.Log;
 import android.util.TypedValue;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.ImageView;
 import android.widget.TextView;
@@ -36,23 +35,18 @@ import com.nostra13.universalimageloader.core.listener.SimpleImageLoadingListene
 
 public class ArticleDetailActivity extends AppCompatActivity implements LoaderManager.LoaderCallbacks<Cursor> {
 
+    private static final long FAB_ANIMATION_DURATION = 200;
     private Cursor mCursor;
     private long mStartId;
 
     private long mSelectedItemId;
     private int mSelectedItemUpButtonFloor = Integer.MAX_VALUE;
 
-    private ImageView imageView;
-
-    private SimpleImageLoadingListener articleHeaderImageLoadingListener = new SimpleImageLoadingListener() {
-
-        @Override
-        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
-            ActivityCompat.startPostponedEnterTransition(ArticleDetailActivity.this);
-        }
-
-    };
     private long mArticleId;
+    private FloatingActionButton fab;
+    private ImageView imageView;
+    private CollapsingToolbarLayout collapsingToolbarLayout;
+    private AppBarLayout appBarLayout;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -75,6 +69,28 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
                 mSelectedItemId = mStartId;
             }
         }
+
+        AppBarLayout.OnOffsetChangedListener mListener = new AppBarLayout.OnOffsetChangedListener() {
+            @Override
+            public void onOffsetChanged(AppBarLayout appBarLayout, int verticalOffset) {
+                if (collapsingToolbarLayout.getHeight() + verticalOffset < 2 * ViewCompat.getMinimumHeight(collapsingToolbarLayout)) {
+                    fab.animate().scaleX(0).setDuration(FAB_ANIMATION_DURATION);
+                    fab.animate().scaleY(0).setDuration(FAB_ANIMATION_DURATION);
+                } else {
+                    fab.animate().scaleX(1).setDuration(FAB_ANIMATION_DURATION);
+                    fab.animate().scaleY(1).setDuration(FAB_ANIMATION_DURATION);
+                }
+            }
+        };
+        appBarLayout = (AppBarLayout) findViewById(R.id.app_bar_layout);
+        appBarLayout.addOnOffsetChangedListener(mListener);
+    }
+
+    @Override
+    public void onBackPressed() {
+//        finishAfterTransition();
+//        supportFinishAfterTransition();
+        finish();
     }
 
     private void setupFullBleedIfNecessary() {
@@ -112,15 +128,13 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
     }
 
     private void setupFab() {
-        FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.share_button);
-        if (fab != null) {
-            fab.setOnClickListener(new View.OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    shareArticle();
-                }
-            });
-        }
+        fab = (FloatingActionButton) findViewById(R.id.share_button);
+        fab.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                shareArticle();
+            }
+        });
     }
 
     private void setupToolbar() {
@@ -129,26 +143,7 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
         if (getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE) {
             getSupportActionBar().setDisplayShowTitleEnabled(false);
         }
-    }
-
-    @Override
-    public void onBackPressed() {
-        finish();
-    }
-
-    @Override
-    public boolean onCreateOptionsMenu(Menu menu) {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.detail, menu);
-        return true;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        if (item.getItemId() == R.id.action_share) {
-            shareArticle();
-        }
-        return super.onOptionsItemSelected(item);
+        collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
     }
 
     private void shareArticle() {
@@ -208,7 +203,6 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
     }
 
     private void setToolbarTitle() {
-        CollapsingToolbarLayout collapsingToolbarLayout = (CollapsingToolbarLayout) findViewById(R.id.collapsing_toolbar_layout);
         if (collapsingToolbarLayout != null) {
             collapsingToolbarLayout.setTitle(getArticleTitle());
         }
@@ -221,21 +215,6 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
             mCursor.close();
             mCursor = null;
         }
-
-//        // Select the start ID
-//        if (mStartId > 0) {
-//            mCursor.moveToFirst();
-//            // TODO: optimize
-//            while (!mCursor.isAfterLast()) {
-//                if (mCursor.getLong(ArticleLoader.Query._ID) == mStartId) {
-//                    final int position = mCursor.getPosition();
-//                    mCursor.moveToPosition(position);
-//                    break;
-//                }
-//                mCursor.moveToNext();
-//            }
-//            mStartId = 0;
-//        }
     }
 
     private void setHeaderImage() {
@@ -302,5 +281,14 @@ public class ArticleDetailActivity extends AppCompatActivity implements LoaderMa
     private String getNewLine() {
         return "//n";
     }
+
+    private SimpleImageLoadingListener articleHeaderImageLoadingListener = new SimpleImageLoadingListener() {
+
+        @Override
+        public void onLoadingComplete(String imageUri, View view, Bitmap loadedImage) {
+            ActivityCompat.startPostponedEnterTransition(ArticleDetailActivity.this);
+        }
+
+    };
 
 }

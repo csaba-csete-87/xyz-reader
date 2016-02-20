@@ -83,4 +83,16 @@
 
     </android.support.v4.widget.NestedScrollView>
 
+    <android.support.design.widget.FloatingActionButton
+        android:id="@+id/share_button"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_margin="@dimen/grid_2"
+        android:src="@drawable/ic_action_share"
+        app:borderWidth="0dp"
+        app:elevation="@dimen/fab_elevation"
+        app:layout_anchor="@id/collapsing_toolbar_layout"
+        app:layout_anchorGravity="bottom|right|end"
+        app:pressedTranslationZ="@dimen/fab_press_translation_z" />
+
 </android.support.design.widget.CoordinatorLayout>
