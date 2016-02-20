@@ -23,9 +23,6 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".ui.ArticleDetailActivity"
-            android:parentActivityName=".ui.ArticleListActivity" />
 
         <service
             android:name=".data.UpdaterService"
@@ -37,7 +34,7 @@
             android:exported="false" />
 
         <activity
-            android:name=".ui.TestDetailActivity"
+            android:name=".ui.ArticleDetailActivity"
             android:label="@string/title_activity_test_detail"
             android:theme="@style/Theme.Bacon.Detail">
             <intent-filter>

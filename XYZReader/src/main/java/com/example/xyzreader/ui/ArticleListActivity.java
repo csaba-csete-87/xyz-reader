@@ -166,7 +166,7 @@ public class ArticleListActivity extends AppCompatActivity implements
                 public void onClick(View view) {
 //                    Intent intent = new Intent(Intent.ACTION_VIEW,
 //                            ItemsContract.Items.buildItemUri(getItemId(vh.getAdapterPosition())));
-                    Intent intent = new Intent(ArticleListActivity.this, TestDetailActivity.class);
+                    Intent intent = new Intent(ArticleListActivity.this, ArticleDetailActivity.class);
                     intent.putExtra("articleId", getItemId(vh.getAdapterPosition()));
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
                         ActivityCompat.postponeEnterTransition(ArticleListActivity.this);
